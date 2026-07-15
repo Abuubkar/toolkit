@@ -29,7 +29,7 @@ runs:
 
     - name: Install ai-github-toolkit
       shell: bash
-      run: pip install ai-github-toolkit
+      run: pip install "${{ github.action_path }}"
 
     - name: Run tool
       shell: bash
