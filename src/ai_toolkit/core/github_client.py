@@ -1,0 +1,119 @@
+"""Thin GitHub REST API client covering exactly what the toolkit's tools
+need: fetching PR metadata/diffs and posting review comments.
+
+Deliberately built directly on httpx rather than PyGithub for this piece:
+an injectable httpx.Client (swappable for a MockTransport in tests) lets
+every code path here be unit tested against a fake HTTP layer, with zero
+real network calls and zero GitHub fixtures/cassettes to keep in sync.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import httpx
+
+from ai_toolkit.shared.errors import GitHubAPIError
+
+DEFAULT_API_BASE = "https://api.github.com"
+
+
+@dataclass(frozen=True)
+class PullRequestInfo:
+    number: int
+    title: str
+    body: str
+    base_sha: str
+    head_sha: str
+    state: str
+
+
+class GitHubClient:
+    def __init__(
+        self,
+        token: str,
+        repo: str,
+        *,
+        base_url: str = DEFAULT_API_BASE,
+        client: httpx.Client | None = None,
+    ):
+        """repo is 'owner/name', e.g. 'abubakar/markpoint'."""
+        self.repo = repo
+        self._base_url = base_url.rstrip("/")
+        self._client = client or httpx.Client(timeout=30.0)
+        self._client.headers.update(
+            {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+            }
+        )
+
+    def get_pull_request(self, pr_number: int) -> PullRequestInfo:
+        url = f"{self._base_url}/repos/{self.repo}/pulls/{pr_number}"
+        response = self._client.get(url)
+        self._raise_for_status(response, url)
+        data = response.json()
+        return PullRequestInfo(
+            number=data["number"],
+            title=data["title"],
+            body=data.get("body") or "",
+            base_sha=data["base"]["sha"],
+            head_sha=data["head"]["sha"],
+            state=data["state"],
+        )
+
+    def get_pull_request_diff(self, pr_number: int) -> str:
+        """Fetches the raw unified diff for a PR, ready for diff_parser.parse_diff."""
+        url = f"{self._base_url}/repos/{self.repo}/pulls/{pr_number}"
+        response = self._client.get(url, headers={"Accept": "application/vnd.github.v3.diff"})
+        self._raise_for_status(response, url)
+        return response.text
+
+    def post_review_comment(
+        self,
+        pr_number: int,
+        *,
+        commit_sha: str,
+        file_path: str,
+        line: int,
+        body: str,
+    ) -> dict:
+        """Posts a line-anchored review comment. Callers must ensure `line`
+        is actually part of the diff — GitHub rejects comments on lines
+        outside the diff context, so this is not defensive against that;
+        the reviewer tool is responsible for only targeting valid lines.
+        """
+        url = f"{self._base_url}/repos/{self.repo}/pulls/{pr_number}/comments"
+        payload = {
+            "body": body,
+            "commit_id": commit_sha,
+            "path": file_path,
+            "line": line,
+            "side": "RIGHT",
+        }
+        response = self._client.post(url, json=payload)
+        self._raise_for_status(response, url)
+        return response.json()
+
+    def post_issue_comment(self, pr_number: int, body: str) -> dict:
+        """Posts a general (non-line-anchored) comment. Used as a fallback
+        when a line-anchored comment can't be placed, and for the run
+        summary comment.
+        """
+        url = f"{self._base_url}/repos/{self.repo}/issues/{pr_number}/comments"
+        response = self._client.post(url, json={"body": body})
+        self._raise_for_status(response, url)
+        return response.json()
+
+    @staticmethod
+    def _raise_for_status(response: httpx.Response, url: str) -> None:
+        if response.status_code >= 400:
+            try:
+                message = response.json().get("message", response.text)
+            except Exception:
+                message = response.text
+            raise GitHubAPIError(response.status_code, message, url=url)
+
+    def close(self) -> None:
+        self._client.close()
