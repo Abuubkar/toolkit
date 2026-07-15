@@ -11,6 +11,11 @@ Usage:
 
     # Option 2: use a .env file (copy .env.example to .env and fill it in)
     uv run --env-file .env python scripts/smoke_test_provider.py
+
+MODEL_ID defaults to gemini-3-flash-preview if unset — override via .env
+or the environment since free-tier/preview model availability shifts
+often (gemini-2.5-flash, for example, stopped being available to new
+accounts).
 """
 
 from __future__ import annotations
@@ -22,22 +27,25 @@ import sys
 from ai_toolkit.providers.openai_compatible import OpenAICompatibleProvider
 from ai_toolkit.shared.errors import LLMProviderError
 
+DEFAULT_MODEL = "gemini-3-flash-preview"
+
 
 async def main() -> int:
     api_key = os.environ.get("AI_API_KEY")
-    model_id = os.environ.get("MODEL_ID")
     if not api_key:
         print("Set AI_API_KEY in your environment first.", file=sys.stderr)
         return 1
 
+    model = os.environ.get("MODEL_ID", DEFAULT_MODEL)
+
     provider = OpenAICompatibleProvider(
         base_url="https://generativelanguage.googleapis.com/v1beta/openai",
         api_key=api_key,
-        model=model_id,
+        model=model,
         provider_label="gemini",
     )
 
-    print("Sending a real request to Gemini...")
+    print(f"Sending a real request to Gemini (model: {model})...")
     try:
         result = await provider.complete(
             system_prompt="You are a terse code reviewer. Reply in one sentence.",

@@ -1,5 +1,3 @@
-import os
-
 import httpx
 import pytest
 
@@ -7,15 +5,13 @@ from ai_toolkit.providers.openai_compatible import OpenAICompatibleProvider
 from ai_toolkit.shared.errors import LLMProviderError
 
 
-model_id = os.environ.get("MODEL_ID")
-
 def _provider_with_transport(handler, **kwargs) -> OpenAICompatibleProvider:
     transport = httpx.MockTransport(handler)
     http_client = httpx.AsyncClient(transport=transport)
     return OpenAICompatibleProvider(
         base_url="https://generativelanguage.googleapis.com/v1beta/openai",
         api_key="fake-gemini-key",
-        model=model_id,
+        model="gemini-2.5-flash",
         client=http_client,
         **kwargs,
     )
@@ -29,7 +25,7 @@ async def test_complete_returns_parsed_response():
         return httpx.Response(
             200,
             json={
-                "model": model_id,
+                "model": "gemini-2.5-flash",
                 "choices": [{"message": {"role": "assistant", "content": "Looks fine to me."}}],
                 "usage": {"prompt_tokens": 120, "completion_tokens": 8},
             },
@@ -39,7 +35,7 @@ async def test_complete_returns_parsed_response():
     result = await provider.complete("You are a reviewer.", "Review this diff: ...")
 
     assert result.content == "Looks fine to me."
-    assert result.model == model_id
+    assert result.model == "gemini-2.5-flash"
     assert result.input_tokens == 120
     assert result.output_tokens == 8
 
@@ -61,7 +57,7 @@ async def test_complete_sends_system_and_user_messages():
     await provider.complete("system instructions", "user diff content", max_tokens=500)
 
     payload = captured["payload"]
-    assert payload["model"] == model_id
+    assert payload["model"] == "gemini-2.5-flash"
     assert payload["max_tokens"] == 500
     assert payload["messages"] == [
         {"role": "system", "content": "system instructions"},

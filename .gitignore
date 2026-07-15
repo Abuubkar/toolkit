@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 .env
 !.env.example
+.DS_Store
 # NOTE: uv.lock is intentionally NOT ignored — commit it for reproducible installs
 .pytest_cache/
 .ruff_cache/
@@ -12,4 +13,3 @@ build/
 *.egg
 .coverage
 htmlcov/
-.DS_Store

@@ -43,7 +43,7 @@ natively, no `python-dotenv` dependency needed:
 
 ```bash
 cp .env.example .env
-# fill in AI_API_KEY in .env
+# fill in AI_API_KEY (and optionally MODEL_ID) in .env
 
 uv run --env-file .env python scripts/smoke_test_provider.py
 ```
