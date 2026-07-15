@@ -1,0 +1,45 @@
+name: 'AI GitHub Toolkit'
+description: 'AI-powered GitHub automation tools (PR review, and more), starting with the PR Reviewer'
+author: 'Abubakar'
+
+inputs:
+  tool:
+    description: 'Which tool to run. Currently supported: review-pr'
+    default: 'review-pr'
+  provider:
+    description: 'LLM provider: github-models (default, zero-config), anthropic, openai-compatible'
+    default: 'github-models'
+  api-key:
+    description: 'API key for the chosen provider. Not needed for github-models.'
+    required: false
+  base-url:
+    description: 'Base URL for the openai-compatible provider (e.g. Groq, Gemini, self-hosted Ollama/vLLM).'
+    required: false
+  config-path:
+    description: 'Path to the review config file in the consumer repo.'
+    default: '.github/pr-reviewer.yml'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install ai-github-toolkit
+      shell: bash
+      run: pip install ai-github-toolkit
+
+    - name: Run tool
+      shell: bash
+      run: ai-toolkit ${{ inputs.tool }} --config-path "${{ inputs.config-path }}"
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        LLM_PROVIDER: ${{ inputs.provider }}
+        LLM_API_KEY: ${{ inputs.api-key }}
+        LLM_BASE_URL: ${{ inputs.base-url }}
+
+branding:
+  icon: 'code'
+  color: 'purple'

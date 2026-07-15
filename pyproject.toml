@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai-github-toolkit"
+version = "0.1.0"
+description = "AI-powered GitHub automation tools (PR review, and more) as reusable GitHub Actions"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "Abubakar" }]
+dependencies = [
+    "unidiff>=0.7.5",
+    "pydantic>=2.6",
+    "PyGithub>=2.3",
+    "PyYAML>=6.0",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+ai-toolkit = "ai_toolkit.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ai_toolkit"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

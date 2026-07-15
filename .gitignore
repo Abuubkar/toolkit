@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+# NOTE: uv.lock is intentionally NOT ignored — commit it for reproducible installs
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg
+.coverage
+htmlcov/
+.DS_Store

@@ -1,0 +1,19 @@
+diff --git a/dist/bundle.generated.ts b/dist/bundle.generated.ts
+index cb3f4d2..6d72e72 100644
+--- a/dist/bundle.generated.ts
++++ b/dist/bundle.generated.ts
+@@ -1,2 +1,2 @@
+-var x=1;
++var x=2;
+ console.log(x);
+diff --git a/src/utils.py b/src/utils.py
+index c873ce3..7ab5e59 100644
+--- a/src/utils.py
++++ b/src/utils.py
+@@ -2,4 +2,6 @@ def calculate_total(items):
+     total = 0
+     for item in items:
+         total += item.price
++    if total < 0:
++        raise ValueError("Total cannot be negative")
+     return total
