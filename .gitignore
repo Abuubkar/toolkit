@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+.env
+!.env.example
 # NOTE: uv.lock is intentionally NOT ignored — commit it for reproducible installs
 .pytest_cache/
 .ruff_cache/

@@ -30,3 +30,32 @@ uv add --dev some-dev-only-package
 
 `uv.lock` is committed to the repo for reproducible installs — always
 commit it alongside any `pyproject.toml` dependency change.
+
+### Manually testing against a real LLM provider
+
+`pytest` never hits a real LLM API — all provider tests run against
+mocked HTTP responses so they're free and deterministic. To confirm a
+provider actually works end-to-end against the real service, use the
+standalone script in `scripts/`.
+
+**Environment variables** can come from a `.env` file — uv loads these
+natively, no `python-dotenv` dependency needed:
+
+```bash
+cp .env.example .env
+# fill in AI_API_KEY in .env
+
+uv run --env-file .env python scripts/smoke_test_provider.py
+```
+
+To avoid typing `--env-file .env` every time, set it once per shell
+session:
+
+```bash
+export UV_ENV_FILE=.env
+uv run python scripts/smoke_test_provider.py   # .env now loads automatically
+uv run pytest tests/ -v                        # also applies to any uv run command
+```
+
+`.env` is gitignored — never commit real secrets. `.env.example`
+documents which variables are expected and is safe to commit.
