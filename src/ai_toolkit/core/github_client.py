@@ -1,11 +1,4 @@
-"""Thin GitHub REST API client covering exactly what the toolkit's tools
-need: fetching PR metadata/diffs and posting review comments.
-
-Deliberately built directly on httpx rather than PyGithub for this piece:
-an injectable httpx.Client (swappable for a MockTransport in tests) lets
-every code path here be unit tested against a fake HTTP layer, with zero
-real network calls and zero GitHub fixtures/cassettes to keep in sync.
-"""
+"""Thin GitHub REST API client for PR metadata, diffs, and comments."""
 
 from __future__ import annotations
 
@@ -64,7 +57,6 @@ class GitHubClient:
         )
 
     def get_pull_request_diff(self, pr_number: int) -> str:
-        """Fetches the raw unified diff for a PR, ready for diff_parser.parse_diff."""
         url = f"{self._base_url}/repos/{self.repo}/pulls/{pr_number}"
         response = self._client.get(url, headers={"Accept": "application/vnd.github.v3.diff"})
         self._raise_for_status(response, url)
@@ -79,10 +71,8 @@ class GitHubClient:
         line: int,
         body: str,
     ) -> dict:
-        """Posts a line-anchored review comment. Callers must ensure `line`
-        is actually part of the diff — GitHub rejects comments on lines
-        outside the diff context, so this is not defensive against that;
-        the reviewer tool is responsible for only targeting valid lines.
+        """`line` must already be part of the diff — GitHub rejects
+        comments on lines outside the diff context.
         """
         url = f"{self._base_url}/repos/{self.repo}/pulls/{pr_number}/comments"
         payload = {
@@ -97,10 +87,7 @@ class GitHubClient:
         return response.json()
 
     def post_issue_comment(self, pr_number: int, body: str) -> dict:
-        """Posts a general (non-line-anchored) comment. Used as a fallback
-        when a line-anchored comment can't be placed, and for the run
-        summary comment.
-        """
+        """Non-line-anchored comment; used as fallback and for run summaries."""
         url = f"{self._base_url}/repos/{self.repo}/issues/{pr_number}/comments"
         response = self._client.post(url, json={"body": body})
         self._raise_for_status(response, url)

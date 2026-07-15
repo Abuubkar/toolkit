@@ -6,14 +6,14 @@ inputs:
   tool:
     description: 'Which tool to run. Currently supported: review-pr'
     default: 'review-pr'
-  provider:
-    description: 'LLM provider: github-models (default, zero-config), anthropic, openai-compatible'
-    default: 'github-models'
   api-key:
-    description: 'API key for the chosen provider. Not needed for github-models.'
-    required: false
+    description: 'API key for the LLM provider (e.g. a Gemini AI Studio key).'
+    required: true
   base-url:
-    description: 'Base URL for the openai-compatible provider (e.g. Groq, Gemini, self-hosted Ollama/vLLM).'
+    description: 'OpenAI-compatible base URL. Defaults to Gemini if unset.'
+    required: false
+  model-id:
+    description: 'Model ID to use. Defaults to gemini-3-flash-preview if unset.'
     required: false
   config-path:
     description: 'Path to the review config file in the consumer repo.'
@@ -36,9 +36,9 @@ runs:
       run: ai-toolkit ${{ inputs.tool }} --config-path "${{ inputs.config-path }}"
       env:
         GITHUB_TOKEN: ${{ github.token }}
-        LLM_PROVIDER: ${{ inputs.provider }}
-        LLM_API_KEY: ${{ inputs.api-key }}
+        AI_API_KEY: ${{ inputs.api-key }}
         LLM_BASE_URL: ${{ inputs.base-url }}
+        MODEL_ID: ${{ inputs.model-id }}
 
 branding:
   icon: 'code'

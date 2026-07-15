@@ -1,8 +1,5 @@
-"""A single provider implementation for anything speaking the OpenAI
-chat-completions wire format: Gemini (via its OpenAI-compat endpoint),
-Groq, OpenRouter, and self-hosted Ollama/vLLM. One class, driven entirely
-by base_url + model, rather than one class per provider — see
-providers/base.py for why that's the right level of abstraction here.
+"""Covers Gemini, Groq, OpenRouter, and self-hosted Ollama/vLLM — any
+OpenAI-compatible chat-completions endpoint, driven by base_url + model.
 """
 
 from __future__ import annotations

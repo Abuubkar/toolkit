@@ -1,7 +1,4 @@
-"""Prompt templates for the PR reviewer, kept separate from orchestration
-logic (reviewer.py) so prompt wording can be iterated on and tested
-independently of the fetch/call/parse pipeline around it.
-"""
+"""Prompt templates for the PR reviewer."""
 
 from __future__ import annotations
 
@@ -47,10 +44,6 @@ def build_review_prompt(hunks: list[DiffHunk], *, focus: list[str]) -> str:
 
 
 def build_retry_prompt(original_response: str) -> str:
-    """Used when the first response fails schema validation — a stricter,
-    minimal reminder rather than resending the full diff, since the model
-    already has the context; it just needs to fix its output format.
-    """
     return (
         "Your previous response could not be parsed as valid JSON matching "
         "the required schema. Here is what you returned:\n\n"

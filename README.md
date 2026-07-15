@@ -2,10 +2,46 @@
 
 AI-powered GitHub automation tools, shipped as reusable GitHub Actions.
 
-**Status: early scaffolding.** First tool in progress: AI PR Reviewer.
+**Status: MVP.** AI PR Reviewer is functional end-to-end (diff fetch → LLM
+review → comments posted back to the PR).
 
-Full usage docs, config reference, and provider setup will land here as the
-MVP tool becomes usable.
+## Usage
+
+Add this to a workflow triggered on `pull_request`:
+
+```yaml
+name: AI PR Review
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: your-org/ai-github-toolkit@v1
+        with:
+          api-key: ${{ secrets.AI_API_KEY }}
+```
+
+`api-key` is required — get a free key from
+[Google AI Studio](https://aistudio.google.com/) for Gemini (the default
+provider). `base-url` and `model-id` are optional overrides for other
+OpenAI-compatible providers (Groq, OpenRouter, self-hosted Ollama/vLLM).
+
+### Configuring review behavior
+
+Optional `.github/pr-reviewer.yml` in your repo:
+
+```yaml
+review:
+  focus: [bugs, security, performance]
+  ignore_paths: ["*.generated.ts", "vendor/**"]
+  max_comments: 10
+  severity_threshold: medium
+```
 
 ## Development setup
 

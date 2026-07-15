@@ -1,9 +1,4 @@
-"""Structured output schema for the PR reviewer. The LLM is instructed
-(see prompts.py) to return JSON matching this shape exactly. Validating
-against this schema is what turns "the LLM said something" into "we
-either have a usable review or a clear error" — see reviewer.py for how
-a validation failure triggers one retry before failing loudly.
-"""
+"""Structured output schema the LLM's JSON response is validated against."""
 
 from __future__ import annotations
 
@@ -40,7 +35,4 @@ class ReviewResult(BaseModel):
 
 
 def meets_severity_threshold(comment: ReviewComment, threshold: str) -> bool:
-    """True if comment's severity is at or above the configured threshold.
-    e.g. threshold='medium' keeps medium and high, drops low.
-    """
     return _SEVERITY_RANK[comment.severity] >= _SEVERITY_RANK[threshold]

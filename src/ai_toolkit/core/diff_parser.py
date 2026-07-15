@@ -1,7 +1,4 @@
-"""Parses unified diffs (as returned by the GitHub API) into structured
-hunks that downstream tools (PR reviewer, code explanation, etc.) can
-turn into LLM prompts without each tool re-implementing diff parsing.
-"""
+"""Parses unified diffs into structured hunks for downstream tools."""
 
 from __future__ import annotations
 
@@ -12,13 +9,11 @@ from unidiff import PatchSet
 
 @dataclass(frozen=True)
 class DiffHunk:
-    """A single contiguous block of changes within one file."""
-
     file_path: str
     hunk_header: str
     added_lines: int
     removed_lines: int
-    content: str  # the raw hunk text, including +/- markers, for the prompt
+    content: str
 
 
 @dataclass(frozen=True)
@@ -30,12 +25,8 @@ class ParsedDiff:
 
 
 def parse_diff(raw_diff: str, *, ignore_paths: list[str] | None = None) -> ParsedDiff:
-    """Parse a unified diff string into structured hunks.
-
-    ignore_paths supports simple glob-style patterns (e.g. "*.generated.ts",
-    "vendor/**") matched against each file's path. Matching files are
-    excluded entirely, keeping generated/vendored code out of the LLM's
-    context and out of review comments.
+    """ignore_paths matches glob patterns (e.g. "*.generated.ts", "vendor/**")
+    against each file's path; matching files are excluded entirely.
     """
     ignore_paths = ignore_paths or []
     patch_set = PatchSet(raw_diff)
