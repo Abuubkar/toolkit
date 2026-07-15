@@ -65,6 +65,8 @@ def test_review_pr_posts_comments_and_reports_summary(monkeypatch, capsys):
         )
         out = capsys.readouterr().out
         assert "1 comment(s) posted" in out
+        assert "AI PR Reviewer — Run Summary" in out
+        assert "tokens" in out
 
 
 def test_review_pr_handles_github_api_error_gracefully(monkeypatch, capsys):

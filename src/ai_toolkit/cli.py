@@ -13,7 +13,7 @@ from ai_toolkit.core.github_client import GitHubClient
 from ai_toolkit.core.pr_context import resolve_pr_number
 from ai_toolkit.providers.factory import build_provider_from_env
 from ai_toolkit.shared.errors import GitHubAPIError, LLMProviderError
-from ai_toolkit.shared.sinks.step_summary import write_step_summary
+from ai_toolkit.shared.sinks.step_summary import format_summary_markdown, write_step_summary
 from ai_toolkit.shared.telemetry import MetricsCollector
 from ai_toolkit.tools.pr_reviewer.reviewer import ReviewParsingError, review_pull_request
 
@@ -80,19 +80,23 @@ def _cmd_review_pr(args: argparse.Namespace) -> int:
 
         collector.record_comments_posted(len(outcome.result.comments))
         collector.record_outcome("success")
-        write_step_summary(collector.finalize())
+        snapshot = collector.finalize()
+        write_step_summary(snapshot)
 
         print(
             f"Review complete: {len(outcome.result.comments)} comment(s) posted, "
             f"{outcome.hunks_analyzed} hunk(s) analyzed"
             + (" (retried once on malformed response)" if outcome.retried else "")
         )
+        print("\n" + format_summary_markdown(snapshot))
         return 0
 
     except (GitHubAPIError, LLMProviderError, ReviewParsingError, RuntimeError) as exc:
         collector.record_outcome("failed", error_message=str(exc))
-        write_step_summary(collector.finalize())
+        snapshot = collector.finalize()
+        write_step_summary(snapshot)
         print(f"review-pr failed: {exc}", file=sys.stderr)
+        print("\n" + format_summary_markdown(snapshot), file=sys.stderr)
         return 1
 
 
