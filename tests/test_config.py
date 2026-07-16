@@ -9,6 +9,8 @@ def test_missing_file_returns_defaults(tmp_path):
     assert config.focus == ["bugs", "security", "performance"]
     assert config.max_comments == 10
     assert config.severity_threshold == "medium"
+    assert "*.lock" in config.ignore_paths
+    assert "*.png" in config.ignore_paths
 
 
 def test_loads_custom_values(tmp_path):
@@ -24,9 +26,15 @@ def test_loads_custom_values(tmp_path):
     config = load_config(config_file)
 
     assert config.focus == ["security"]
-    assert config.ignore_paths == ["*.generated.ts", "vendor/**"]
+    # Check that custom ones are appended
+    assert "*.generated.ts" in config.ignore_paths
+    assert "vendor/**" in config.ignore_paths
+    # Check that default ones are still preserved
+    assert "*.lock" in config.ignore_paths
+    assert "*.png" in config.ignore_paths
     assert config.max_comments == 5
     assert config.severity_threshold == "high"
+
 
 
 def test_invalid_severity_threshold_raises(tmp_path):

@@ -12,6 +12,24 @@ from pydantic import BaseModel, Field
 
 VALID_SEVERITIES = ("low", "medium", "high")
 
+DEFAULT_IGNORE_PATHS: list[str] = [
+    # Lockfiles
+    "*.lock",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    # Assets/Binaries/Compiled
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.gif",
+    "*.svg",
+    "*.ico",
+    "*.pdf",
+    "*.zip",
+    "*.tar.gz",
+]
+
 
 class ReviewConfig(BaseModel):
     focus: list[str] = Field(default_factory=lambda: ["bugs", "security", "performance"])
@@ -27,6 +45,14 @@ class ReviewConfig(BaseModel):
             )
         if self.max_comments < 1:
             raise ValueError("max_comments must be at least 1")
+
+        # Merge default ignore paths with user-configured paths
+        merged = list(DEFAULT_IGNORE_PATHS)
+        for path in self.ignore_paths:
+            if path not in merged:
+                merged.append(path)
+        self.ignore_paths = merged
+
 
 
 def load_config(config_path: str | Path = ".github/pr-reviewer.yml") -> ReviewConfig:
