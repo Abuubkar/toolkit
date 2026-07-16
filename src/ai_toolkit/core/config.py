@@ -37,3 +37,16 @@ def load_config(config_path: str | Path = ".github/pr-reviewer.yml") -> ReviewCo
     raw = yaml.safe_load(path.read_text()) or {}
     review_section = raw.get("review", {})
     return ReviewConfig(**review_section)
+
+
+def load_ignore_paths(config_path: str | Path = ".github/pr-reviewer.yml") -> list[str]:
+    """Top-level `ignore_paths` in the config file, shared across all
+    diff-based tools (not nested under `review:`, which is PR-reviewer-
+    specific settings only).
+    """
+    path = Path(config_path)
+    if not path.exists():
+        return []
+
+    raw = yaml.safe_load(path.read_text()) or {}
+    return raw.get("ignore_paths", [])

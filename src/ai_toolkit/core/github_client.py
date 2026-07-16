@@ -93,6 +93,12 @@ class GitHubClient:
         self._raise_for_status(response, url)
         return response.json()
 
+    def update_pull_request_body(self, pr_number: int, body: str) -> dict:
+        url = f"{self._base_url}/repos/{self.repo}/pulls/{pr_number}"
+        response = self._client.patch(url, json={"body": body})
+        self._raise_for_status(response, url)
+        return response.json()
+
     @staticmethod
     def _raise_for_status(response: httpx.Response, url: str) -> None:
         if response.status_code >= 400:

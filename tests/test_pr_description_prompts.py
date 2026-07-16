@@ -1,5 +1,5 @@
 from ai_toolkit.core.diff_parser import DiffHunk
-from ai_toolkit.tools.pr_reviewer.prompts import build_review_prompt
+from ai_toolkit.tools.pr_description.prompts import build_description_prompt
 
 SAMPLE_HUNK = DiffHunk(
     file_path="src/utils.py",
@@ -10,24 +10,11 @@ SAMPLE_HUNK = DiffHunk(
 )
 
 
-def test_prompt_includes_file_path_and_content():
-    prompt = build_review_prompt([SAMPLE_HUNK], focus=["bugs"])
+def test_prompt_includes_file_path_and_diff_content():
+    prompt = build_description_prompt([SAMPLE_HUNK])
 
     assert "src/utils.py" in prompt
     assert "if total < 0" in prompt
-
-
-def test_prompt_includes_focus_areas():
-    prompt = build_review_prompt([SAMPLE_HUNK], focus=["security", "performance"])
-
-    assert "security" in prompt
-    assert "performance" in prompt
-
-
-def test_prompt_omits_focus_line_when_empty():
-    prompt = build_review_prompt([SAMPLE_HUNK], focus=[])
-
-    assert "Focus areas" not in prompt
 
 
 def test_prompt_handles_multiple_hunks():
@@ -38,7 +25,7 @@ def test_prompt_handles_multiple_hunks():
         removed_lines=1,
         content="@@ -1 +1 @@\n-old\n+new\n",
     )
-    prompt = build_review_prompt([SAMPLE_HUNK, hunk2], focus=[])
+    prompt = build_description_prompt([SAMPLE_HUNK, hunk2])
 
     assert "src/utils.py" in prompt
     assert "src/other.py" in prompt

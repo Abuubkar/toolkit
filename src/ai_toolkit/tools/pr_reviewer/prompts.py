@@ -41,13 +41,3 @@ def build_review_prompt(hunks: list[DiffHunk], *, focus: list[str]) -> str:
     diff_text = "\n\n".join(hunk_sections)
 
     return f"{focus_line}Review the following diff hunks:\n\n{diff_text}"
-
-
-def build_retry_prompt(original_response: str) -> str:
-    return (
-        "Your previous response could not be parsed as valid JSON matching "
-        "the required schema. Here is what you returned:\n\n"
-        f"{original_response}\n\n"
-        "Respond again with ONLY the corrected JSON object, matching the "
-        "schema exactly. No markdown code fences, no text outside the JSON."
-    )

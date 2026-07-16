@@ -113,3 +113,23 @@ def test_post_issue_comment_hits_issues_endpoint():
     result = client.post_issue_comment(42, "Run summary")
 
     assert result["id"] == 999
+
+
+def test_update_pull_request_body_sends_patch_with_body():
+    captured = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured["method"] = request.method
+        captured["url"] = str(request.url)
+        captured["body"] = request.content
+        return httpx.Response(200, json={"number": 42, "body": "new description"})
+
+    client = _client_with_transport(handler)
+    result = client.update_pull_request_body(42, "new description")
+
+    assert captured["method"] == "PATCH"
+    assert "/pulls/42" in captured["url"]
+    import json
+
+    assert json.loads(captured["body"]) == {"body": "new description"}
+    assert result["body"] == "new description"
