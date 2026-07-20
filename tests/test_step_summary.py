@@ -5,7 +5,7 @@ from ai_toolkit.shared.telemetry import MetricsSnapshot
 def test_format_includes_key_metrics():
     snapshot = MetricsSnapshot(
         review_comments_posted=3,
-        hunks_analyzed=10,
+        items_analyzed=10,
         llm_tokens_input=500,
         llm_tokens_output=100,
         total_duration_seconds=12.3,
@@ -15,7 +15,7 @@ def test_format_includes_key_metrics():
     markdown = format_summary_markdown(snapshot)
 
     assert "3 comment(s) posted" in markdown
-    assert "10 hunk(s) analyzed" in markdown
+    assert "10 item(s) analyzed" in markdown
     assert "500 in / 100 out tokens" in markdown
     assert "12.3s total" in markdown
     assert "estimate" in markdown

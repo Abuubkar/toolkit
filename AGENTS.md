@@ -72,15 +72,36 @@ implementing `providers/base.py::LLMProvider`.
 
 ## Current scope
 
-- **Shipped:** AI PR Reviewer (MVP), fully wired, tested, verified on a
-  real PR.
-- **V1 — locked to exactly two tools, rest dropped for good:**
-  PR Description Generator, Changelog Generator. Do not add Commit
-  Message Generator, Code Explanation, `AnthropicProvider`, a JSON
-  artifact telemetry sink, or config-schema docs — these were considered
-  and explicitly cut from scope, not just deferred.
+- **Shipped, wired into `action.yml`:** AI PR Reviewer (`review-pr`), PR
+  Description Generator (`describe-pr`), Test Recommendation
+  (`recommend-tests` — prose suggestions only, no code generation, no
+  execution; scope decided explicitly, don't expand it without asking).
+  All fully tested; `review-pr` verified on a real PR.
+- **`describe-pr` is done, not being iterated on further** — the known
+  PR-template limitation (see "Deferred" below) stays as-is unless
+  explicitly requested.
+- **Shipped, CLI-only — will not be wired into `action.yml`:** Changelog
+  Generator (`generate-changelog`). It needs different inputs (`base`/
+  `head` refs, no PR number) than the PR-scoped tools, and bolting that
+  onto the composite action via conditional bash branching was
+  considered and explicitly rejected. It's invoked directly:
+  `uv run ai-toolkit generate-changelog --base <ref> --head <ref>`, or a
+  consumer can write their own thin workflow step calling the published
+  CLI. Do not revisit this without discussing the design first — it's a
+  real architectural fork (single flexible action vs. multiple composite
+  actions), not a small addition.
+- **V1 locked to exactly the two above** — Commit Message Generator,
+  Code Explanation, `AnthropicProvider`, a JSON artifact telemetry sink,
+  and config-schema docs were considered and explicitly cut, not
+  deferred.
 - **Not planned:** PyPI publishing, `.agents/` directory, Agent Skills
   (`SKILL.md`) — no concrete need for these yet.
+- **Deferred (not cut):** PR Description Generator doesn't detect an
+  unedited GitHub PR template vs. a genuinely empty body — it only
+  checks for empty/whitespace. On template-using repos it will always
+  comment instead of filling in. The fix (fetch the repo's template
+  file, compare against the PR body) was scoped but not built — pick up
+  only if asked.
 
 ## Before making changes
 

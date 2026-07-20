@@ -20,7 +20,7 @@ class MetricsSnapshot:
     llm_duration_seconds: float = 0.0
     github_api_call_count: int = 0
     review_comments_posted: int = 0
-    hunks_analyzed: int = 0
+    items_analyzed: int = 0
     outcome: str = "success"
     error_message: str | None = None
     model: str | None = None
@@ -56,8 +56,8 @@ class MetricsCollector:
     def record_comments_posted(self, count: int):
         self._snapshot.review_comments_posted = count
 
-    def record_hunks_analyzed(self, count: int):
-        self._snapshot.hunks_analyzed = count
+    def record_items_analyzed(self, count: int):
+        self._snapshot.items_analyzed = count
 
     def record_outcome(self, outcome: str, *, error_message: str | None = None):
         self._snapshot.outcome = outcome

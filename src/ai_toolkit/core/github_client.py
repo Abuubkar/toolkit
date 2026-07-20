@@ -21,6 +21,13 @@ class PullRequestInfo:
     state: str
 
 
+@dataclass(frozen=True)
+class CommitSummary:
+    sha: str
+    message: str
+    author: str
+
+
 class GitHubClient:
     def __init__(
         self,
@@ -98,6 +105,20 @@ class GitHubClient:
         response = self._client.patch(url, json={"body": body})
         self._raise_for_status(response, url)
         return response.json()
+
+    def compare_commits(self, base: str, head: str) -> list[CommitSummary]:
+        url = f"{self._base_url}/repos/{self.repo}/compare/{base}...{head}"
+        response = self._client.get(url)
+        self._raise_for_status(response, url)
+        data = response.json()
+        return [
+            CommitSummary(
+                sha=c["sha"][:7],
+                message=c["commit"]["message"],
+                author=c["commit"]["author"]["name"],
+            )
+            for c in data.get("commits", [])
+        ]
 
     @staticmethod
     def _raise_for_status(response: httpx.Response, url: str) -> None:

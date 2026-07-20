@@ -4,7 +4,7 @@ author: 'Abubakar'
 
 inputs:
   tool:
-    description: 'Which tool to run. Currently supported: review-pr'
+    description: 'Which tool to run: review-pr, describe-pr, or recommend-tests.'
     default: 'review-pr'
   api-key:
     description: 'API key for the LLM provider (e.g. a Gemini AI Studio key).'

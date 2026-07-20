@@ -133,3 +133,48 @@ def test_update_pull_request_body_sends_patch_with_body():
 
     assert json.loads(captured["body"]) == {"body": "new description"}
     assert result["body"] == "new description"
+
+
+def test_compare_commits_returns_parsed_commit_summaries():
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert "/compare/v1.0.0...main" in str(request.url)
+        return httpx.Response(
+            200,
+            json={
+                "commits": [
+                    {
+                        "sha": "abc1234567890",
+                        "commit": {
+                            "message": "Add negative-total validation\n\nMore detail here.",
+                            "author": {"name": "Abubakar"},
+                        },
+                    },
+                    {
+                        "sha": "def4567890123",
+                        "commit": {
+                            "message": "Fix typo in README",
+                            "author": {"name": "Abubakar"},
+                        },
+                    },
+                ]
+            },
+        )
+
+    client = _client_with_transport(handler)
+    commits = client.compare_commits("v1.0.0", "main")
+
+    assert len(commits) == 2
+    assert commits[0].sha == "abc1234"
+    assert commits[0].message.startswith("Add negative-total validation")
+    assert commits[0].author == "Abubakar"
+    assert commits[1].sha == "def4567"
+
+
+def test_compare_commits_returns_empty_list_when_no_commits():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"commits": []})
+
+    client = _client_with_transport(handler)
+    commits = client.compare_commits("v1.0.0", "v1.0.0")
+
+    assert commits == []

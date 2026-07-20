@@ -12,7 +12,7 @@ def format_summary_markdown(snapshot: MetricsSnapshot) -> str:
     lines = [
         "## AI PR Reviewer — Run Summary",
         f"{status_icon} {snapshot.review_comments_posted} comment(s) posted · "
-        f"{snapshot.hunks_analyzed} hunk(s) analyzed",
+        f"{snapshot.items_analyzed} item(s) analyzed",
         f"⏱ {snapshot.total_duration_seconds:.1f}s total · "
         f"🔤 {snapshot.llm_tokens_input} in / {snapshot.llm_tokens_output} out tokens · "
         f"💰 ~${snapshot.estimated_cost_usd():.4f} (estimate)",

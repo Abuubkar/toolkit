@@ -2,12 +2,13 @@
 
 AI-powered GitHub automation tools, shipped as reusable GitHub Actions.
 
-**Status: MVP.** AI PR Reviewer is functional end-to-end (diff fetch → LLM
-review → comments posted back to the PR).
+**Status: V1+.** Four tools shipped: AI PR Reviewer, PR Description
+Generator, and Test Recommendation (all available as the GitHub Action),
+plus a Changelog Generator (CLI-only — see below for why).
 
 ## Usage
 
-Add this to a workflow triggered on `pull_request`:
+### AI PR Reviewer
 
 ```yaml
 name: AI PR Review
@@ -26,10 +27,59 @@ jobs:
           api-key: ${{ secrets.AI_API_KEY }}
 ```
 
+### PR Description Generator
+
+Same Action, different `tool` input. Fills in the PR body only if it's
+currently empty; if any content already exists, posts the suggestion as
+a comment instead of overwriting it.
+
+**Known limitation:** if your repo uses a GitHub PR template, the body
+is auto-populated with the template text the moment a PR opens — so
+this tool will see a non-empty body and always comment rather than fill
+in, even though nobody actually wrote anything. Detecting "body matches
+the unedited template" was considered and intentionally deferred (not
+implemented) — see `AGENTS.md` if picking this back up later.
+
+```yaml
+      - uses: your-org/ai-github-toolkit@v1
+        with:
+          tool: describe-pr
+          api-key: ${{ secrets.AI_API_KEY }}
+```
+
 `api-key` is required — get a free key from
 [Google AI Studio](https://aistudio.google.com/) for Gemini (the default
 provider). `base-url` and `model-id` are optional overrides for other
 OpenAI-compatible providers (Groq, OpenRouter, self-hosted Ollama/vLLM).
+
+### Test Recommendation
+
+Same Action, different `tool` input. Posts a single PR comment
+suggesting what should be tested — prose descriptions only, never
+generated test code, and never executed. Suggestions aren't verified to
+be correct or complete; treat them as a starting point, not a coverage
+guarantee.
+
+```yaml
+      - uses: your-org/ai-github-toolkit@v1
+        with:
+          tool: recommend-tests
+          api-key: ${{ secrets.AI_API_KEY }}
+```
+
+### Changelog Generator (CLI-only)
+
+Not wired into `action.yml` — it needs different inputs (`base`/`head`
+refs, no PR number) than the PR-scoped tools above, and that's a real
+architectural fork rather than a small addition. Run it directly:
+
+```bash
+uv run ai-toolkit generate-changelog --base v1.0.0 --head main
+```
+
+Or call the published CLI from your own workflow step if you want it in
+CI — see `AGENTS.md` for why this is intentionally not part of the
+composite action.
 
 ### Configuring review behavior
 
@@ -41,6 +91,9 @@ review:
   ignore_paths: ["*.generated.ts", "vendor/**"]
   max_comments: 10
   severity_threshold: medium
+
+# Also applies to PR Description Generator and Changelog Generator:
+ignore_paths: ["*.generated.ts", "vendor/**"]
 ```
 
 ## Development setup

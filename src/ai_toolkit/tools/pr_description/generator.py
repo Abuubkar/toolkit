@@ -36,7 +36,7 @@ async def generate_description_from_hunks(
     )
 
     if collector is not None:
-        collector.record_hunks_analyzed(len(hunks))
+        collector.record_items_analyzed(len(hunks))
 
     return PRDescriptionOutcome(description=result, hunks_analyzed=len(hunks), retried=retried)
 

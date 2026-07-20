@@ -48,7 +48,7 @@ async def review_diff_hunks(
     final_result = ReviewResult(summary=result.summary, comments=filtered_comments)
 
     if collector is not None:
-        collector.record_hunks_analyzed(len(hunks))
+        collector.record_items_analyzed(len(hunks))
 
     return ReviewOutcome(
         result=final_result,
